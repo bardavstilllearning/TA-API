@@ -23,6 +23,7 @@ class Worker extends Model
         'phone',
         'whatsapp',
         'is_available',
+        'approval_status',
     ];
 
     protected $casts = [
@@ -34,7 +35,6 @@ class Worker extends Model
         'total_orders' => 'integer',
     ];
 
-    // Relasi
     public function schedules()
     {
         return $this->hasMany(WorkerSchedule::class);
@@ -45,20 +45,20 @@ class Worker extends Model
         return $this->hasMany(Order::class);
     }
 
-    // Helper method buat hitung jarak dari user (Haversine formula)
+    public function scopeApproved($query)
+    {
+        return $query->where('approval_status', 'approved');
+    }
+
     public function getDistanceFrom($userLat, $userLng)
     {
-        $earthRadius = 6371; // dalam km
-
+        $earthRadius = 6371;
         $latDiff = deg2rad($this->latitude - $userLat);
         $lngDiff = deg2rad($this->longitude - $userLng);
-
         $a = sin($latDiff / 2) * sin($latDiff / 2) +
              cos(deg2rad($userLat)) * cos(deg2rad($this->latitude)) *
              sin($lngDiff / 2) * sin($lngDiff / 2);
-
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-
         return round($earthRadius * $c, 2);
     }
 }

@@ -25,13 +25,14 @@ class PublicWorkerController extends Controller
             'whatsapp' => 'nullable|string',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            'photo' => 'nullable|image|max:5120',
+            'photo' => 'required|image|max:5120',
         ]);
 
         $data = $request->except('photo');
-        $data['rating'] = 4.5;
+        $data['rating'] = 0;
         $data['total_orders'] = 0;
-        $data['is_available'] = true;
+        $data['is_available'] = false;
+        $data['approval_status'] = 'pending';
 
         if ($request->hasFile('photo')) {
             $data['photo'] = $request->file('photo')->store('workers', 'public');
@@ -39,7 +40,6 @@ class PublicWorkerController extends Controller
 
         $worker = Worker::create($data);
 
-        // Create default schedule
         $days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
         $timeSlots = ['08:00-10:00', '10:00-12:00', '13:00-15:00', '15:00-17:00'];
 
@@ -55,6 +55,6 @@ class PublicWorkerController extends Controller
         }
 
         return redirect()->route('worker.register.form')
-            ->with('success', 'Pendaftaran berhasil! Terima kasih telah bergabung.');
+            ->with('success', 'Pendaftaran berhasil! Mohon tunggu persetujuan admin.');
     }
 }

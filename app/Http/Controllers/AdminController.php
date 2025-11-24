@@ -7,12 +7,10 @@ use App\Models\Worker;
 use App\Models\Order;
 use App\Models\WorkerSchedule;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
-    // ==================== AUTH ====================
     public function showLogin()
     {
         if (session('admin_logged_in')) {
@@ -42,12 +40,11 @@ class AdminController extends Controller
         return redirect()->route('admin.login')->with('success', 'Logout berhasil!');
     }
 
-    // ==================== DASHBOARD ====================
     public function dashboard()
     {
         $stats = [
             'total_users' => User::count(),
-            'total_workers' => Worker::count(),
+            'total_workers' => Worker::where('approval_status', 'approved')->count(),
             'total_orders' => Order::count(),
             'pending_orders' => Order::where('status', 'pending')->count(),
             'completed_orders' => Order::where('status', 'completed')->count(),
@@ -59,23 +56,37 @@ class AdminController extends Controller
             ->limit(10)
             ->get();
 
-        $top_workers = Worker::orderBy('rating', 'desc')
+        $top_workers = Worker::where('approval_status', 'approved')
+            ->where('total_orders', '>', 0)
+            ->orderBy('rating', 'desc')
+            ->orderBy('total_orders', 'desc')
             ->limit(5)
             ->get();
 
         return view('admin.dashboard', compact('stats', 'recent_orders', 'top_workers'));
     }
 
-    // ==================== USERS ====================
-    public function users()
+    // USERS
+    public function users(Request $request)
     {
-        $users = User::orderBy('created_at', 'desc')->paginate(20);
+        $query = User::orderBy('created_at', 'desc');
+        
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+        
+        $users = $query->paginate(20);
         return view('admin.users.index', compact('users'));
     }
 
     public function userShow($id)
     {
-        $user = User::with('orders')->findOrFail($id);
+        $user = User::with('orders.worker')->findOrFail($id);
         return view('admin.users.show', compact('user'));
     }
 
@@ -94,9 +105,11 @@ class AdminController extends Controller
             'email' => 'required|email|unique:users,email,' . $id,
             'phone' => 'nullable|string',
             'address' => 'nullable|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
         ]);
 
-        $user->update($request->only(['name', 'email', 'phone', 'address']));
+        $user->update($request->only(['name', 'email', 'phone', 'address', 'latitude', 'longitude']));
 
         if ($request->hasFile('photo')) {
             if ($user->photo) {
@@ -119,10 +132,25 @@ class AdminController extends Controller
         return redirect()->route('admin.users')->with('success', 'User berhasil dihapus!');
     }
 
-    // ==================== WORKERS ====================
-    public function workers()
+    // WORKERS
+    public function workers(Request $request)
     {
-        $workers = Worker::orderBy('created_at', 'desc')->paginate(20);
+        $query = Worker::orderBy('created_at', 'desc');
+        
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('job_title', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->has('status') && $request->status) {
+            $query->where('approval_status', $request->status);
+        }
+        
+        $workers = $query->paginate(20);
         return view('admin.workers.index', compact('workers'));
     }
 
@@ -147,9 +175,10 @@ class AdminController extends Controller
         ]);
 
         $data = $request->except('photo');
-        $data['rating'] = 4.5;
+        $data['rating'] = 0;
         $data['total_orders'] = 0;
         $data['is_available'] = true;
+        $data['approval_status'] = 'approved';
 
         if ($request->hasFile('photo')) {
             $data['photo'] = $request->file('photo')->store('workers', 'public');
@@ -157,7 +186,6 @@ class AdminController extends Controller
 
         $worker = Worker::create($data);
 
-        // Create default schedule
         $days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
         $timeSlots = ['08:00-10:00', '10:00-12:00', '13:00-15:00', '15:00-17:00'];
 
@@ -177,7 +205,7 @@ class AdminController extends Controller
 
     public function workerShow($id)
     {
-        $worker = Worker::with(['schedules', 'orders'])->findOrFail($id);
+        $worker = Worker::with(['schedules', 'orders.user'])->findOrFail($id);
         return view('admin.workers.show', compact('worker'));
     }
 
@@ -228,7 +256,21 @@ class AdminController extends Controller
         return redirect()->route('admin.workers')->with('success', 'Worker berhasil dihapus!');
     }
 
-    // ==================== ORDERS ====================
+    public function workerApprove($id)
+    {
+        $worker = Worker::findOrFail($id);
+        $worker->update(['approval_status' => 'approved']);
+        return back()->with('success', 'Worker berhasil disetujui!');
+    }
+
+    public function workerReject($id)
+    {
+        $worker = Worker::findOrFail($id);
+        $worker->update(['approval_status' => 'rejected']);
+        return back()->with('success', 'Worker ditolak!');
+    }
+
+    // ORDERS
     public function orders()
     {
         $orders = Order::with(['user', 'worker'])
@@ -256,7 +298,34 @@ class AdminController extends Controller
         return redirect()->route('admin.orders')->with('success', 'Order berhasil dihapus!');
     }
 
-    // ==================== SCHEDULES ====================
+    public function orderConfirm($id)
+    {
+        $order = Order::findOrFail($id);
+        $order->update(['status' => 'accepted']);
+        return back()->with('success', 'Pesanan dikonfirmasi!');
+    }
+
+    public function orderCancel($id)
+    {
+        $order = Order::findOrFail($id);
+        
+        // Release schedule if booked
+        if ($order->order_date && $order->time_slot) {
+            $dayName = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            $day = $dayName[$order->order_date->dayOfWeek];
+            
+            WorkerSchedule::where('worker_id', $order->worker_id)
+                ->where('day', $day)
+                ->where('time_slot', $order->time_slot)
+                ->where('booked_date', $order->order_date)
+                ->update(['is_booked' => false, 'booked_date' => null]);
+        }
+        
+        $order->update(['status' => 'cancelled']);
+        return back()->with('success', 'Pesanan dibatalkan!');
+    }
+
+    // SCHEDULES
     public function schedules($workerId)
     {
         $worker = Worker::findOrFail($workerId);

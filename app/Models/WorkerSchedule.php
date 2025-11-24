@@ -14,13 +14,16 @@ class WorkerSchedule extends Model
         'day',
         'time_slot',
         'is_available',
+        'booked_date',
+        'is_booked',
     ];
 
     protected $casts = [
         'is_available' => 'boolean',
+        'is_booked' => 'boolean',
+        'booked_date' => 'date',
     ];
 
-    // Relasi
     public function worker()
     {
         return $this->belongsTo(Worker::class);
