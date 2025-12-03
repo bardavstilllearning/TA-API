@@ -3,24 +3,24 @@
 @section('title', 'Detail Mitra Pekerja')
 
 @section('content')
-    <div class="mb-8 flex justify-between items-center">
+    <div class="mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div>
-            <h2 class="text-3xl font-bold text-[#052c62]">Detail Mitra Pekerja</h2>
-            <p class="text-gray-600">Informasi lengkap mengenai mitra pekerja di Kerah Biru</p>
+            <h2 class="text-2xl lg:text-3xl font-bold text-[#052c62]">Detail Mitra Pekerja</h2>
+            <p class="text-gray-600 text-sm lg:text-base">Informasi lengkap mengenai mitra pekerja di Kerah Biru</p>
         </div>
-        <div class="flex space-x-2">
+        <div class="flex flex-wrap gap-2">
             <a href="{{ route('admin.schedules', $worker->id) }}"
-                class="bg-[#6f42c1] text-white px-5 py-2 rounded-lg hover:bg-purple-700 transition">
+                class="bg-[#6f42c1] text-white px-4 lg:px-5 py-2 rounded-lg hover:bg-purple-700 transition text-sm lg:text-base">
                 <i class="fa-solid fa-calendar-days"></i> Jadwal
             </a>
 
             <a href="{{ route('admin.workers.edit', $worker->id) }}"
-                class="bg-yellow-500 text-white px-5 py-2 rounded-lg hover:bg-yellow-600 transition">
+                class="bg-yellow-500 text-white px-4 lg:px-5 py-2 rounded-lg hover:bg-yellow-600 transition text-sm lg:text-base">
                 <i class="fa-solid fa-pen-to-square"></i> Edit
             </a>
 
             <a href="{{ route('admin.workers') }}"
-                class="bg-gray-600 text-white px-5 py-2 rounded-lg hover:bg-gray-700 transition">
+                class="bg-gray-600 text-white px-4 lg:px-5 py-2 rounded-lg hover:bg-gray-700 transition text-sm lg:text-base">
                 <i class="fa-solid fa-arrow-left"></i> Kembali
             </a>
         </div>
@@ -41,7 +41,7 @@
             <h3 class="text-2xl font-bold text-center mt-4 text-[#052c62]">{{ $worker->name }}</h3>
             <p class="text-center text-gray-600">{{ $worker->job_title }}</p>
 
-            <div class="flex justify-center mt-3 gap-3 items-center">
+            <div class="flex justify-center mt-3 gap-3 items-center flex-wrap">
                 <div class="flex items-center text-yellow-500 text-lg gap-1">
                     <i class="fa-solid fa-star"></i> <span class="font-bold">{{ $worker->rating }}</span>
                 </div>
@@ -52,7 +52,7 @@
                 Rp {{ number_format($worker->price_per_hour, 0, ',', '.') }}/jam
             </p>
 
-            <div class="flex justify-center gap-2 mt-4">
+            <div class="flex justify-center gap-2 mt-4 flex-wrap">
                 <span class="px-3 py-1 text-sm rounded-full font-semibold bg-blue-100 text-blue-800">
                     <i class="fa-solid {{ $worker->gender === 'Laki-laki' ? 'fa-person' : 'fa-person-dress' }}"></i>
                     {{ $worker->gender }}
@@ -82,11 +82,31 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
                         <p class="text-gray-500">Telepon</p>
-                        <p class="font-semibold text-gray-800">{{ $worker->phone }}</p>
+                        @php
+                            $phone = preg_replace('/[^0-9]/', '', $worker->phone);
+                        @endphp
+                        <p class="font-semibold text-gray-800">
+                            <a href="https://wa.me/{{ $phone }}" target="_blank"
+                                class="text-green-600 hover:text-green-700">
+                                {{ $worker->phone }}
+                            </a>
+                        </p>
                     </div>
                     <div>
                         <p class="text-gray-500">WhatsApp</p>
-                        <p class="font-semibold text-gray-800">{{ $worker->whatsapp ?? '-' }}</p>
+                        @if($worker->whatsapp)
+                            @php
+                                $whatsapp = preg_replace('/[^0-9]/', '', $worker->whatsapp);
+                            @endphp
+                            <p class="font-semibold text-gray-800">
+                                <a href="https://wa.me/{{ $whatsapp }}" target="_blank"
+                                    class="text-green-600 hover:text-green-700">
+                                    {{ $worker->whatsapp }}
+                                </a>
+                            </p>
+                        @else
+                            <p class="font-semibold text-gray-800">-</p>
+                        @endif
                     </div>
                     <div>
                         <p class="text-gray-500">Lokasi (Lat)</p>
@@ -116,23 +136,24 @@
                 </h3>
 
                 @forelse($worker->orders->take(5) as $order)
-                    <div class="border-l-4 pl-4 py-3 mb-3 shadow-sm rounded-md
-                                        {{ $order->status === 'completed' ? 'border-green-500' : 'border-yellow-500' }}">
-                        <div class="flex justify-between text-sm">
+                    <div
+                        class="border-l-4 pl-4 py-3 mb-3 shadow-sm rounded-md
+                                                                {{ $order->status === 'completed' ? 'border-green-500' : 'border-yellow-500' }}">
+                        <div class="flex flex-col sm:flex-row justify-between gap-2 text-sm">
                             <div>
                                 <p class="font-semibold text-gray-800">{{ $order->user->name }}</p>
                                 <p class="text-gray-500">
                                     {{ $order->order_date->format('d M Y') }} - {{ $order->time_slot }}
                                 </p>
                             </div>
-                            <div class="text-right">
+                            <div class="sm:text-right">
                                 <p class="font-bold text-green-600">
                                     Rp {{ number_format($order->total_price, 0, ',', '.') }}
                                 </p>
                                 <span class="px-2 py-1 rounded-full text-xs font-semibold
-                                                    @if($order->status === 'completed') bg-green-100 text-green-800
-                                                    @elseif($order->status === 'pending') bg-yellow-100 text-yellow-800
-                                                    @else bg-blue-100 text-blue-800 @endif">
+                                                                            @if($order->status === 'completed') bg-green-100 text-green-800
+                                                                            @elseif($order->status === 'pending') bg-yellow-100 text-yellow-800
+                                                                            @else bg-blue-100 text-blue-800 @endif">
                                     {{ ucfirst($order->status) }}
                                 </span>
                             </div>
@@ -175,7 +196,7 @@
                         <p class="text-gray-600 text-sm">Pending</p>
                     </div>
                     <div class="p-4 bg-purple-50 rounded-lg">
-                        <p class="text-2xl font-bold text-purple-600">
+                        <p class="text-xl lg:text-2xl font-bold text-purple-600">
                             Rp
                             {{ number_format($worker->orders->where('status', 'completed')->sum('total_price'), 0, ',', '.') }}
                         </p>

@@ -3,16 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PublicWorkerController;
+use App\Http\Controllers\WelcomeController;
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
-
-// Public Worker Registration
+Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
 Route::get('/register', [PublicWorkerController::class, 'showRegisterForm'])->name('worker.register.form');
 Route::post('/worker/register', [PublicWorkerController::class, 'register'])->name('worker.register');
-
-// Admin Routes
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [AdminController::class, 'showLogin'])->name('login');
     Route::post('/login', [AdminController::class, 'login'])->name('login.post');
@@ -28,7 +23,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('/users/{id}', [AdminController::class, 'userUpdate'])->name('users.update');
         Route::delete('/users/{id}', [AdminController::class, 'userDelete'])->name('users.delete');
 
-        // Workers
+        // Workers (Pekerja)
         Route::get('/workers', [AdminController::class, 'workers'])->name('workers');
         Route::get('/workers/create', [AdminController::class, 'workerCreate'])->name('workers.create');
         Route::post('/workers', [AdminController::class, 'workerStore'])->name('workers.store');

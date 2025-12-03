@@ -52,12 +52,13 @@
                 </thead>
                 <tbody class="bg-white divide-y">
                     @forelse($recent_orders as $order)
-                        <tr class="hover:bg-gray-50 cursor-pointer"
+                        <tr class="hover:bg-gray-50 cursor-pointer transition"
                             onclick="window.location='{{ route('admin.orders.show', $order->id) }}'">
                             <td class="px-2 lg:px-4 py-2">{{ $order->id }}</td>
                             <td class="px-2 lg:px-4 py-2 text-center">{{ Str::limit($order->user->name, 15) }}</td>
                             <td class="px-2 lg:px-4 py-2 text-center hidden lg:table-cell">
-                                {{ Str::limit($order->worker->name, 15) }}</td>
+                                {{ Str::limit($order->worker->name, 15) }}
+                            </td>
                             <td class="px-2 lg:px-4 py-2 text-center text-xs lg:text-sm">{{ $order->order_date->format('d M') }}
                             </td>
                             <td class="px-2 lg:px-4 py-2 text-center">
@@ -117,7 +118,7 @@
                     </div>
                 </div>
             @empty
-                <p class="text-center text-gray-500 py-4">Belum ada worker terdaftar</p>
+                <p class="text-center text-gray-500 py-4">Belum ada pekerja terdaftar</p>
             @endforelse
         </div>
     </div>

@@ -42,6 +42,10 @@ class WorkerController extends Controller
         $workers = $query->get();
 
         $workers = $workers->map(function($worker) use ($user) {
+            // Calculate actual rating from orders
+            $avgRating = $worker->orders()->whereNotNull('user_rating')->avg('user_rating');
+            $worker->rating = $avgRating ? round($avgRating, 2) : 0;
+            
             $distance = $this->calculateDistance(
                 $user->latitude ?? -7.7956,
                 $user->longitude ?? 110.3695,
@@ -88,6 +92,10 @@ class WorkerController extends Controller
     {
         try {
             $worker = Worker::with('schedules')->where('approval_status', 'approved')->findOrFail($id);
+            
+            // Calculate actual rating
+            $avgRating = $worker->orders()->whereNotNull('user_rating')->avg('user_rating');
+            $worker->rating = $avgRating ? round($avgRating, 2) : 0;
 
             return response()->json([
                 'success' => true,
@@ -98,6 +106,53 @@ class WorkerController extends Controller
                 'success' => false,
                 'message' => 'Worker not found',
             ], 404);
+        }
+    }
+
+    public function getAvailableSchedules(Request $request, $workerId)
+    {
+        try {
+            $request->validate([
+                'date' => 'required|date',
+            ]);
+
+            $date = \Carbon\Carbon::parse($request->date);
+            $dayName = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            $day = $dayName[$date->dayOfWeek];
+
+            $worker = Worker::findOrFail($workerId);
+            
+            $schedules = $worker->schedules()
+                ->where('day', $day)
+                ->where('is_available', true)
+                ->where(function($query) use ($date) {
+                    $query->where('is_booked', false)
+                        ->orWhere(function($q) use ($date) {
+                            $q->where('is_booked', true)
+                              ->whereDate('booked_date', '!=', $date);
+                        });
+                })
+                ->get()
+                ->map(function($schedule) use ($date) {
+                    return [
+                        'id' => $schedule->id,
+                        'time_slot' => $schedule->time_slot,
+                        'is_available' => true,
+                        'is_booked' => $schedule->is_booked && $schedule->booked_date && $schedule->booked_date->isSameDay($date),
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'date' => $date->format('Y-m-d'),
+                'day' => $day,
+                'schedules' => $schedules,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ], 500);
         }
     }
 

@@ -12,7 +12,9 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 
     <style>
-        /* SIDEBAR FIXED */
+        /* ============================================
+           SIDEBAR STYLES
+           ============================================ */
         .sidebar {
             background: #052c62;
             width: 260px;
@@ -20,13 +22,12 @@
             position: fixed;
             top: 0;
             left: 0;
-
             display: flex;
             flex-direction: column;
-
             padding: 24px;
             overflow-y: auto;
             overflow-x: hidden;
+            z-index: 100;
         }
 
         .sidebar-link {
@@ -36,8 +37,9 @@
             padding: 12px 16px;
             border-radius: 8px;
             color: #ffffffcc;
-            transition: 0.25s;
+            transition: all 0.25s ease;
             text-decoration: none;
+            font-size: 0.95rem;
         }
 
         .sidebar-link:hover {
@@ -48,13 +50,23 @@
         .sidebar-link.active {
             background: white !important;
             color: #052c62 !important;
-            font-weight: bold;
+            font-weight: 700;
         }
 
-        /* LOGOUT FIX */
+        .sidebar-link.active i {
+            color: #052c62 !important;
+        }
+
+        .sidebar-link i {
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* LOGOUT SECTION */
         .logout-section {
             margin-top: auto;
-            /* INI YANG MEMBAWA LOGOUT KE PALING BAWAH */
+            padding-top: 1rem;
         }
 
         .logout-btn {
@@ -68,26 +80,147 @@
             display: flex;
             gap: 10px;
             align-items: center;
-            transition: 0.25s;
+            transition: all 0.25s ease;
+            border: none;
+            cursor: pointer;
         }
 
         .logout-btn:hover {
             background: #b91c1c;
         }
 
+        /* MAIN CONTENT */
         .main-content {
             margin-left: 260px;
             padding: 32px;
+            min-height: 100vh;
+            background: #f3f4f6;
+        }
+
+        /* ============================================
+           PAGINATION STYLES - SIMPLE & CLEAN
+           ============================================ */
+
+        /* Active page (current page number) */
+        nav[role="navigation"] span[aria-current="page"] {
+            background-color: #052c62 !important;
+            color: white !important;
+            border-color: #052c62 !important;
+            font-weight: 700 !important;
+        }
+
+        /* ============================================
+           RESPONSIVE MOBILE
+           ============================================ */
+        @media (max-width: 1024px) {
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                width: 260px;
+                z-index: 999;
+                transition: left 0.3s ease;
+                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+                padding: 16px;
+            }
+
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 998;
+            }
+
+            .mobile-overlay.active {
+                display: block;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .main-content {
+                padding: 12px;
+            }
+
+            .sidebar {
+                width: 240px;
+                left: -260px;
+            }
+        }
+
+        /* ============================================
+           SCROLLBAR CUSTOM
+           ============================================ */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* ============================================
+   PAGINATION STYLES - FORCE OVERRIDE
+   ============================================ */
+
+        /* Override semua background gelap */
+        nav[role="navigation"] * {
+            background-image: none !important;
+        }
+
+        /* Base untuk semua item */
+        nav[role="navigation"] span,
+        nav[role="navigation"] a {
+            background-color: #ffffff !important;
+            color: #052c62 !important;
+            border: 1px solid #d1d5db !important;
+        }
+
+        /* Active page */
+        nav[role="navigation"] span[aria-current="page"] {
+            background-color: #052c62 !important;
+            color: #ffffff !important;
+            border-color: #052c62 !important;
+            font-weight: 700 !important;
+        }
+
+        /* Disabled */
+        nav[role="navigation"] span[aria-disabled="true"] {
+            background-color: #f3f4f6 !important;
+            color: #9ca3af !important;
+            border-color: #e5e7eb !important;
+        }
+
+        /* Hover */
+        nav[role="navigation"] a:hover {
+            background-color: #f3f4f6 !important;
         }
     </style>
 </head>
 
 <body class="bg-gray-100">
 
-    <!-- SIDEBAR -->
+
     <aside class="sidebar text-white">
 
-        <!-- HEADER LOGO -->
+
         <div class="flex items-center gap-3 mb-6">
             <img src="{{ asset('images/Icon.png') }}" class="w-10">
             <h2 class="text-lg font-bold">Admin Kerah Biru</h2>
@@ -95,7 +228,7 @@
 
         <hr class="border-white/30 mb-4">
 
-        <!-- MENU -->
+
         <nav class="space-y-2">
             <a href="{{ route('admin.dashboard') }}"
                 class="sidebar-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
@@ -118,7 +251,7 @@
             </a>
         </nav>
 
-        <!-- LOGOUT PALING BAWAH -->
+
         <div class="logout-section">
             <form id="logoutForm" action="{{ route('admin.logout') }}" method="POST">
                 @csrf
@@ -130,7 +263,7 @@
 
     </aside>
 
-    <!-- CONTENT -->
+
     <main class="main-content">
 
         @if(session('success'))

@@ -11,7 +11,7 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- User Info -->
+        
         <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
             <h3 class="text-xl font-bold mb-4 flex items-center text-[#052c62]">
                 <i class="fas fa-user mr-2"></i> Informasi Pengguna
@@ -33,13 +33,24 @@
                     </div>
                 </div>
                 <div class="border-t pt-3">
-                    <p class="text-gray-700"><strong>Telepon:</strong> {{ $order->user->phone ?? '-' }}</p>
+                    <p class="text-gray-700">
+                        <strong>Telepon:</strong> 
+                        @if($order->user->phone)
+                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $order->user->phone) }}" 
+                               target="_blank" 
+                               class="text-green-600 hover:text-green-700">
+                                {{ $order->user->phone }}
+                            </a>
+                        @else
+                            -
+                        @endif
+                    </p>
                     <p class="text-gray-700"><strong>Alamat:</strong> {{ $order->user->address ?? '-' }}</p>
                 </div>
             </div>
         </div>
 
-        <!-- Worker Info -->
+        
         <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
             <h3 class="text-xl font-bold mb-4 flex items-center text-green-700">
                 <i class="fas fa-person-digging mr-2"></i> Informasi Pekerja
@@ -65,7 +76,18 @@
                     </div>
                 </div>
                 <div class="border-t pt-3">
-                    <p class="text-gray-700"><strong>Telepon:</strong> {{ $order->worker->phone }}</p>
+                    <p class="text-gray-700">
+                        <strong>Telepon:</strong> 
+                        @php
+                            $phone = preg_replace('/[^0-9]/', '', $order->worker->phone);
+                            $orderInfo = "Halo, saya pelanggan dari pesanan #{$order->id}. Tanggal: {$order->order_date->format('d M Y')}, Waktu: {$order->time_slot}.";
+                        @endphp
+                        <a href="https://wa.me/{{ $phone }}?text={{ urlencode($orderInfo) }}" 
+                           target="_blank" 
+                           class="text-green-600 hover:text-green-700">
+                            {{ $order->worker->phone }}
+                        </a>
+                    </p>
                     <p class="text-gray-700"><strong>Harga:</strong> Rp
                         {{ number_format($order->worker->price_per_hour, 0, ',', '.') }}/jam
                     </p>
@@ -73,7 +95,7 @@
             </div>
         </div>
 
-        <!-- Order Details -->
+        
         <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
             <h3 class="text-xl font-bold mb-4 flex items-center text-purple-600">
                 <i class="fas fa-info-circle mr-2"></i> Detail Pesanan
@@ -110,108 +132,159 @@
                     <span class="px-3 py-1 rounded-full text-sm font-semibold {{ $colors[$order->status] ?? 'bg-gray-100 text-gray-700' }}">
                         {{ ucfirst(str_replace('_', ' ', $order->status)) }}
                     </span>
-                    </div>
-                    </div>
-                    @if($order->status == 'pending')
-                        <div class="mt-6 flex gap-3">
-                            <form action="{{ route('admin.orders.confirm', $order->id) }}" method="POST" class="flex-1">
-                                @csrf
-                                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">
-                                    <i class="fas fa-check"></i> Konfirmasi
-                                </button>
-                            </form>
-                            <form action="{{ route('admin.orders.cancel', $order->id) }}" method="POST" class="flex-1"
-                                onsubmit="return confirmAction(this, 'Batalkan Pesanan?', 'Jadwal akan dikembalikan tersedia')">
-                                @csrf
-                                <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">
-                                    <i class="fas fa-times"></i> Batalkan
-                                </button>
-                            </form>
-                        </div>
-                    @endif
-                    </div>
+                </div>
+            </div>
+            @if($order->status == 'pending')
+                <div class="mt-6 flex gap-3">
+                    <form action="{{ route('admin.orders.confirm', $order->id) }}" method="POST" class="flex-1">
+                        @csrf
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-check"></i> Konfirmasi
+                        </button>
+                    </form>
+                    <button onclick="showCancelModal({{ $order->id }})" 
+                            class="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-times"></i> Batalkan
+                    </button>
+                </div>
+            @endif
+        </div>
 
-                    <!-- Timeline -->
-                    <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-                        <h3 class="text-xl font-bold mb-4 flex items-center text-orange-600">
-                            <i class="fas fa-clock mr-2"></i> Timeline
-                        </h3>
-                        <div class="space-y-4">
-                            <div class="flex items-start space-x-3">
-                                <i class="fas fa-check-circle text-green-500 mt-1"></i>
-                                <div>
-                                    <p class="font-semibold">Order Created</p>
-                                    <p class="text-sm text-gray-600">{{ $order->created_at->format('d M Y H:i') }}</p>
-                                </div>
-                            </div>
-                            @if($order->worker_arrived_at)
-                                <div class="flex items-start space-x-3">
-                                    <i class="fas fa-check-circle text-green-500 mt-1"></i>
-                                    <div>
-                                        <p class="font-semibold">Worker Arrived</p>
-                                        <p class="text-sm text-gray-600">{{ $order->worker_arrived_at->format('d M Y H:i') }}</p>
-                                    </div>
-                                </div>
-                            @endif
-                            @if($order->work_started_at)
-                                <div class="flex items-start space-x-3">
-                                    <i class="fas fa-check-circle text-green-500 mt-1"></i>
-                                    <div>
-                                        <p class="font-semibold">Work Started</p>
-                                        <p class="text-sm text-gray-600">{{ $order->work_started_at->format('d M Y H:i') }}</p>
-                                    </div>
-                                </div>
-                            @endif
-                            @if($order->work_completed_at)
-                                <div class="flex items-start space-x-3">
-                                    <i class="fas fa-check-circle text-green-500 mt-1"></i>
-                                    <div>
-                                        <p class="font-semibold">Work Completed</p>
-                                        <p class="text-sm text-gray-600">{{ $order->work_completed_at->format('d M Y H:i') }}</p>
-                                    </div>
-                                </div>
-                            @endif
+        
+        <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+            <h3 class="text-xl font-bold mb-4 flex items-center text-orange-600">
+                <i class="fas fa-clock mr-2"></i> Progress Pekerjaan
+            </h3>
+            <div class="space-y-4">
+                <div class="flex items-start space-x-3">
+                    <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                    <div>
+                        <p class="font-semibold">Pesanan Dibuat</p>
+                        <p class="text-sm text-gray-600">{{ $order->created_at->format('d M Y H:i') }}</p>
+                    </div>
+                </div>
+                @if($order->worker_arrived_at)
+                    <div class="flex items-start space-x-3">
+                        <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                        <div>
+                            <p class="font-semibold">Pekerja Tiba</p>
+                            <p class="text-sm text-gray-600">{{ $order->worker_arrived_at->format('d M Y H:i') }}</p>
                         </div>
-                    </div></div>
-                    <!-- Photos -->
-                    @if($order->photo_before || $order->photo_after)
-                        <div class="mt-6 bg-white rounded-lg shadow-md p-6 border border-gray-200">
-                            <h3 class="text-xl font-bold mb-4 flex items-center text-indigo-600">
-                                <i class="fas fa-images mr-2"></i> Dokumentasi
-                            </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                @if($order->photo_before)
-                                    <div>
-                                        <h4 class="font-semibold mb-2">Foto Sebelum</h4>
-                                        <img src="{{ asset('storage/' . $order->photo_before) }}" alt="Before"
-                                            class="w-full h-64 object-cover rounded-lg">
-                                    </div>
-                                @endif
-                                @if($order->photo_after)
-                                    <div>
-                                        <h4 class="font-semibold mb-2">Foto Sesudah</h4>
-                                        <img src="{{ asset('storage/' . $order->photo_after) }}" alt="After"
-                                            class="w-full h-64 object-cover rounded-lg">
-                                    </div>
-                                @endif
-                            </div>
+                    </div>
+                @endif
+                @if($order->work_started_at)
+                    <div class="flex items-start space-x-3">
+                        <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                        <div>
+                            <p class="font-semibold">Pekerjaan Dimulai</p>
+                            <p class="text-sm text-gray-600">{{ $order->work_started_at->format('d M Y H:i') }}</p>
                         </div>
-                    @endif
-                    <!-- Review -->
-                    @if($order->user_rating)
-                        <div class="mt-6 bg-white rounded-lg shadow-md p-6 border border-gray-200">
-                            <h3 class="text-xl font-bold mb-4 flex items-center text-yellow-500">
-                                <i class="fas fa-star mr-2"></i> Review
-                            </h3>
-                            <div class="flex items-center space-x-2 mb-2">
-                                @for($i = 1; $i <= 5; $i++)
-                                    <i class="fas fa-star {{ $i <= $order->user_rating ? 'text-yellow-500' : 'text-gray-300' }}"></i>
-                                @endfor
-                                <span class="font-bold">{{ $order->user_rating }}/5</span>
-                            </div>
-                            @if($order->user_review)
-                                <p class="text-gray-700 mt-2">{{ $order->user_review }}</p>
-                            @endif
+                    </div>
+                @endif
+                @if($order->work_completed_at)
+                    <div class="flex items-start space-x-3">
+                        <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                        <div>
+                            <p class="font-semibold">Pekerjaan Selesai</p>
+                            <p class="text-sm text-gray-600">{{ $order->work_completed_at->format('d M Y H:i') }}</p>
                         </div>
-                    @endif
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    
+    @if($order->photo_before || $order->photo_after)
+        <div class="mt-6 bg-white rounded-lg shadow-md p-6 border border-gray-200">
+            <h3 class="text-xl font-bold mb-4 flex items-center text-indigo-600">
+                <i class="fas fa-images mr-2"></i> Dokumentasi
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                @if($order->photo_before)
+                    <div>
+                        <h4 class="font-semibold mb-2">Foto Sebelum</h4>
+                        <img src="{{ asset('storage/' . $order->photo_before) }}" alt="Before"
+                            class="w-full h-64 object-cover rounded-lg">
+                    </div>
+                @endif
+                @if($order->photo_after)
+                    <div>
+                        <h4 class="font-semibold mb-2">Foto Sesudah</h4>
+                        <img src="{{ asset('storage/' . $order->photo_after) }}" alt="After"
+                            class="w-full h-64 object-cover rounded-lg">
+                    </div>
+                @endif
+            </div>
+        </div>
+    @endif
+
+    
+    @if($order->user_rating)
+        <div class="mt-6 bg-white rounded-lg shadow-md p-6 border border-gray-200">
+            <h3 class="text-xl font-bold mb-4 flex items-center text-yellow-500">
+                <i class="fas fa-star mr-2"></i> Ulasan
+            </h3>
+            <div class="flex items-center space-x-2 mb-2">
+                @for($i = 1; $i <= 5; $i++)
+                    <i class="fas fa-star {{ $i <= $order->user_rating ? 'text-yellow-500' : 'text-gray-300' }}"></i>
+                @endfor
+                <span class="font-bold">{{ $order->user_rating }}/5</span>
+            </div>
+            @if($order->user_review)
+                <p class="text-gray-700 mt-2">{{ $order->user_review }}</p>
+            @endif
+        </div>
+    @endif
+
+    
+    <div id="cancelModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Batalkan Pesanan?</h3>
+                <p class="text-sm text-gray-500 mb-6">
+                    Jadwal akan dikembalikan tersedia setelah pesanan dibatalkan.
+                </p>
+                <div class="flex gap-3">
+                    <button onclick="hideModal()" 
+                            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition">
+                        Batal
+                    </button>
+                    <form id="cancelForm" method="POST" class="flex-1">
+                        @csrf
+                        <button type="submit" 
+                                class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">
+                            Ya, Batalkan
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showCancelModal(orderId) {
+            const modal = document.getElementById('cancelModal');
+            const form = document.getElementById('cancelForm');
+            form.action = `/admin/orders/${orderId}/cancel`;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function hideModal() {
+            const modal = document.getElementById('cancelModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('cancelModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideModal();
+            }
+        });
+    </script>
 @endsection

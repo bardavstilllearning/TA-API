@@ -3,25 +3,26 @@
 @section('title', 'Detail Pengguna')
 
 @section('content')
-    <div class="mb-8 flex justify-between items-center">
+    <div class="mb-6 lg:mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 lg:gap-4">
         <div>
-            <h2 class="text-3xl font-bold text-[#052c62]">Detail Pengguna</h2>
-            <p class="text-gray-600">Informasi lengkap terkait pengguna yang terdaftar di Kerah Biru</p>
+            <h2 class="text-2xl lg:text-3xl font-bold text-[#052c62]">Detail Pengguna</h2>
+            <p class="text-gray-600 text-sm lg:text-base">Informasi lengkap terkait pengguna yang terdaftar di Kerah Biru
+            </p>
         </div>
-        <div class="flex space-x-2">
+        <div class="flex flex-wrap gap-2">
             <a href="{{ route('admin.users.edit', $user->id) }}"
-                class="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition">
+                class="bg-yellow-500 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg hover:bg-yellow-600 transition text-sm lg:text-base">
                 <i class="fa-solid fa-pen-to-square"></i> Perbarui
             </a>
             <a href="{{ route('admin.users') }}"
-                class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition">
+                class="bg-gray-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg hover:bg-gray-700 transition text-sm lg:text-base">
                 <i class="fa-solid fa-arrow-left"></i> Kembali
             </a>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Profile -->
+
         <div>
             <div class="bg-white shadow-md p-6 rounded-lg">
                 @if($user->photo)
@@ -54,10 +55,10 @@
             </div>
         </div>
 
-        <!-- Info Sections -->
+
         <div class="lg:col-span-2 space-y-6">
 
-            <!-- Contact -->
+
             <div class="bg-white shadow-md p-6 rounded-lg">
                 <h3 class="text-xl font-bold text-[#052c62] flex items-center gap-2 mb-4">
                     <i class="fa-solid fa-address-book"></i> Informasi Kontak
@@ -79,7 +80,7 @@
                 </div>
             </div>
 
-            <!-- Order History -->
+
             <div class="bg-white shadow-md p-6 rounded-lg">
                 <h3 class="text-xl font-bold text-[#052c62] flex items-center gap-2 mb-4">
                     <i class="fa-solid fa-list-check"></i> Riwayat Pemesanan
@@ -88,7 +89,7 @@
                 @forelse($user->orders->take(5) as $order)
                     <div
                         class="border-l-4 mb-3 p-3 shadow-sm rounded-md 
-                                                {{ $order->status == 'completed' ? 'border-green-500' : 'border-yellow-500' }}">
+                                                                        {{ $order->status == 'completed' ? 'border-green-500' : 'border-yellow-500' }}">
                         <div class="flex justify-between text-sm">
                             <div>
                                 <p class="font-semibold">{{ $order->worker->name }} - {{ $order->worker->job_title }}</p>
@@ -101,9 +102,9 @@
                                     Rp {{ number_format($order->total_price, 0, ',', '.') }}
                                 </p>
                                 <span class="text-xs px-2 py-1 font-semibold rounded-full
-                                                            @if($order->status == 'completed') bg-green-100 text-green-800
-                                                            @elseif($order->status == 'pending') bg-yellow-100 text-yellow-800
-                                                            @else bg-blue-100 text-blue-800 @endif">
+                                                                                    @if($order->status == 'completed') bg-green-100 text-green-800
+                                                                                    @elseif($order->status == 'pending') bg-yellow-100 text-yellow-800
+                                                                                    @else bg-blue-100 text-blue-800 @endif">
                                     {{ ucfirst($order->status) }}
                                 </span>
                             </div>
@@ -114,7 +115,7 @@
                 @endforelse
             </div>
 
-            <!-- Statistics -->
+
             <div class="bg-white shadow-md p-6 rounded-lg">
                 <h3 class="text-xl font-bold text-[#052c62] flex items-center gap-2 mb-4">
                     <i class="fa-solid fa-chart-column"></i> Statistik

@@ -271,11 +271,32 @@ class AdminController extends Controller
     }
 
     // ORDERS
-    public function orders()
+    public function orders(Request $request)
     {
-        $orders = Order::with(['user', 'worker'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+        $query = Order::with(['user', 'worker'])
+            ->orderBy('created_at', 'desc');
+        
+        // Search
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('user', function($userQuery) use ($search) {
+                    $userQuery->where('name', 'like', "%{$search}%")
+                              ->orWhere('email', 'like', "%{$search}%");
+                })
+                ->orWhereHas('worker', function($workerQuery) use ($search) {
+                    $workerQuery->where('name', 'like', "%{$search}%")
+                                ->orWhere('job_title', 'like', "%{$search}%");
+                });
+            });
+        }
+        
+        // Filter by status
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+        
+        $orders = $query->paginate(20);
         return view('admin.orders.index', compact('orders'));
     }
 

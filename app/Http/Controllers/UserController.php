@@ -17,7 +17,7 @@ class UserController extends Controller
             if (!$user) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'User not found',
+                    'message' => 'Pengguna tidak ditemukan',
                 ], 404);
             }
 
@@ -65,7 +65,7 @@ class UserController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Profile updated!',
+                'message' => 'Profil Berhasil Diperbarui!',
                 'user' => $user,
             ]);
 
@@ -101,7 +101,7 @@ class UserController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Preferences updated!',
+                'message' => 'Preferensi diperbarui!',
                 'user' => $user,
             ]);
 
@@ -127,7 +127,7 @@ class UserController extends Controller
             if ($user->password !== $request->current_password) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Current password is incorrect',
+                    'message' => 'Kata sandi saat ini salah!',
                 ], 401);
             }
 
@@ -136,7 +136,7 @@ class UserController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Password updated successfully!',
+                'message' => 'Kata sandri berhasil diperbarui!',
             ]);
 
         } catch (\Exception $e) {

@@ -1,11 +1,11 @@
 @extends('admin.layout')
 
-@section('title', 'Edit Worker')
+@section('title', 'Edit Pekerja')
 
 @section('content')
     <div class="mb-8">
-        <h2 class="text-2xl lg:text-3xl font-bold text-[#052c62]">Perbarui Data Worker</h2>
-        <p class="text-gray-600 text-sm lg:text-base">Silahkan ubah informasi worker di bawah ini</p>
+        <h2 class="text-2xl lg:text-3xl font-bold text-[#052c62]">Perbarui Data Pekerja</h2>
+        <p class="text-gray-600 text-sm lg:text-base">Silahkan ubah informasi pekerja di bawah ini</p>
     </div>
 
     <div class="bg-white rounded-lg shadow-md p-6 lg:p-8 border border-gray-200">
@@ -95,9 +95,9 @@
                 @error('photo') <small class="text-red-500">{{ $message }}</small> @enderror
             </div>
 
-            <div class="flex justify-end gap-4 mt-8">
+            <div class="flex flex-col sm:flex-row justify-end gap-4 mt-8">
                 <a href="{{ route('admin.workers') }}"
-                    class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg">
+                    class="text-center bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg">
                     <i class="fa-solid fa-arrow-left"></i> Batal
                 </a>
                 <button type="submit" class="bg-[#052c62] hover:bg-[#031f46] text-white px-6 py-3 rounded-lg transition">

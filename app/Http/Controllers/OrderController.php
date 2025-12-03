@@ -33,10 +33,24 @@ class OrderController extends Controller
                 ->where('time_slot', $request->time_slot)
                 ->first();
             
-            if (!$schedule || !$schedule->is_available || $schedule->is_booked) {
+            if (!$schedule) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jadwal tidak ditemukan',
+                ], 400);
+            }
+            
+            if (!$schedule->is_available) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Jadwal tidak tersedia',
+                ], 400);
+            }
+            
+            if ($schedule->is_booked && $schedule->booked_date && $schedule->booked_date->isSameDay($orderDate)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jadwal sudah dipesan pada tanggal ini',
                 ], 400);
             }
 
@@ -83,12 +97,20 @@ class OrderController extends Controller
     {
         try {
             $order = Order::findOrFail($orderId);
+            
+            if ($order->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pesanan sudah dikonfirmasi sebelumnya',
+                ], 400);
+            }
+            
             $order->update(['status' => 'accepted']);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Pesanan dikonfirmasi!',
-                'order' => $order,
+                'order' => $order->load('worker'),
             ]);
         } catch (\Exception $e) {
             return response()->json([

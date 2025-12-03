@@ -7,16 +7,16 @@
     <title>Admin Login | Kerah Biru</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('images/Icon.png') }}" />
 
-    <!-- Bootstrap -->
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Icons -->
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
-    <!-- Font -->
+
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <!-- Custom CSS -->
+
     <link rel="stylesheet" href="{{ asset('css/public.css') }}">
 
 </head>
@@ -47,7 +47,7 @@
             <form action="{{ route('admin.login.post') }}" method="POST">
                 @csrf
 
-                <!-- Username -->
+
                 <div class="form-floating mb-3">
                     <input type="text" class="form-control" id="usernameInput" name="username" placeholder="Username"
                         required>
@@ -57,7 +57,7 @@
                     @error('username') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
 
-                <!-- Password with Toggle -->
+
                 <div class="form-floating mb-4 position-relative">
                     <input type="password" class="form-control" id="passwordInput" name="password"
                         placeholder="Password" required>
@@ -65,7 +65,7 @@
                         <i class="bi bi-shield-lock-fill me-1"></i> Password
                     </label>
 
-                    <!-- Eye Button -->
+
                     <span class="position-absolute top-50 end-0 translate-middle-y me-3 cursor-pointer"
                         onclick="togglePassword()" style="cursor:pointer;">
                         <i class="bi bi-eye-slash" id="toggleIcon"></i>
@@ -90,7 +90,7 @@
         </div>
     </div>
 
-    <!-- Script -->
+
     <script>
         function togglePassword() {
             const password = document.getElementById("passwordInput");
